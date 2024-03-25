@@ -1,0 +1,34 @@
+class Sonaric < Formula
+  desc "Sonaric Network: the AI-powered backbone for all blockchains."
+  homepage "https://sonaric.xyz"
+  version "_BREW_VERSION"
+
+  url_x64 = "_BREW_URL"
+  sha256_x64 = "_BREW_SHA256"
+  url_arm64 = "_BREW_ARM_URL"
+  sha256_arm64 = "_BREW_ARM_SHA256"
+
+  if Hardware::CPU.intel?
+    sha256 sha256_x64
+    url url_x64
+  else
+    sha256 sha256_arm64
+    url url_arm64
+  end
+
+  depends_on "podman" => :recommended
+
+  def install
+    bin.install "sonaric" => "sonaric"
+    bin.install "sonaricd" => "sonaricd"
+  end
+
+  def caveats; <<~EOS
+    Initialize the sonaric machine with sonaric daemon inside
+      sonaric machine init
+
+    Upgrade sonaric daemon inside the sonaric machine to the latest version
+      sonaric machine upgrade
+    EOS
+  end
+end
