@@ -1,12 +1,12 @@
 class Sonaric < Formula
   desc "Sonaric Network: the AI-powered backbone for all blockchains."
   homepage "https://sonaric.xyz"
-  version "0.0.4"
+  version "0.0.5"
 
-  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.0.4.tar.gz"
-  sha256_x64 = "4fdc9ce3008b5b2c9907eb12e9b8bc55d6982ef09380c124d3e36c9c8aa94c79"
-  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.0.4.tar.gz"
-  sha256_arm64 = "a1237ae4567d322e11b0bc615a733108599c71bb7f2b2eb30c0e7a2bea8ea064"
+  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.0.5.tar.gz"
+  sha256_x64 = "135e9b8409d6cf4b5274be6ed9a09bd911d5024181150b8cbf6cadebc0dae598"
+  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.0.5.tar.gz"
+  sha256_arm64 = "9bef124c9a019b8d99a453afcbd2734d96b8eba3db6438878dda08afd1432cfd"
 
   if Hardware::CPU.intel?
     sha256 sha256_x64
