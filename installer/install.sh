@@ -12,7 +12,7 @@ abort() {
 }
 
 log() {
-  printf "%s...\n" "$@"
+  printf "%s\n" "$@"
 }
 
 warn() {
@@ -55,15 +55,36 @@ else
   abort "${NAME} is only supported on macOS and Linux."
 fi
 
-# Install Homebrew if it needed
-if ! [ -x "$(command -v brew)" ]; then
+HOMEBREW=$(which brew 2>/dev/null)
+if [ -x "$(command -v ${HOMEBREW})" ]; then
+  log "Homebrew automaticaly detected: ${HOMEBREW}"
+elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
+  HOMEBREW=/usr/local/bin/brew
+  log "Homebrew detected: ${HOMEBREW}"
+elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
+  HOMEBREW=/opt/homebrew/bin/brew
+  log "Homebrew detected: ${HOMEBREW}"
+else
   log "Homebrew is not installed in your system, let's change it"
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+  HOMEBREW=$(which brew 2>/dev/null)
+  if [ -x "$(command -v ${HOMEBREW})" ]; then
+    log "Homebrew automaticaly detected: ${HOMEBREW}"
+  elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
+    HOMEBREW=/usr/local/bin/brew
+    log "Homebrew detected: ${HOMEBREW}"
+  elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
+    HOMEBREW=/opt/homebrew/bin/brew
+    log "Homebrew detected: ${HOMEBREW}"
+  else
+    abort "Can not detect Homebrew, please follow the instruction on the screen and run this script again"
+  fi
 fi
 
 log "Fetching the newest version of Homebrew and installed packages"
-brew update
+${HOMEBREW} update
 
 log "Install the newest version of Sonaric"
-brew install monk-io/sonaric/sonaric
+${HOMEBREW} install monk-io/sonaric/sonaric
 
