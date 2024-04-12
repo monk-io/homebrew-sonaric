@@ -30,10 +30,10 @@ setupHomebrew() {
 
   log "Homebrew detected: ${HOMEBREW}"
   log " "
-  log "Please add Homebrew directory '${HOMEBREW_DIR}' to PATH in '${USER_SHELL_RC}'"
-  log "----------------------------------------------------------------------------"
-  log "   echo PATH=${HOMEBREW_DIR}:"'$PATH'" >> ${USER_SHELL_RC}   "
-  log "----------------------------------------------------------------------------"
+  log "Please add Homebrew directory '${HOMEBREW_DIR}' to PATH into '${USER_SHELL_RC}'"
+  log "------------------------------------------------------------------------------------"
+  log " echo PATH=${HOMEBREW_DIR}:"'$PATH'" >> ${USER_SHELL_RC} && source ${USER_SHELL_RC} "
+  log "------------------------------------------------------------------------------------"
   log " "
 }
 
