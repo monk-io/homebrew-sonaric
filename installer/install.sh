@@ -26,17 +26,15 @@ abort() {
 
 setupHomebrew() {
   HOMEBREW=${1}
-  log "Homebrew detected: ${HOMEBREW}"
-
   HOMEBREW_DIR=$(dirname ${HOMEBREW})
-  if ! [ -f "${USER_SHELL_RC}" ]; then
-    touch ${USER_SHELL_RC}
-    log "Created user shell (${USER_SHELL}) config file: '${USER_SHELL_RC}'"
-  fi
-  echo "\nPATH=${HOMEBREW_DIR}:${PATH}" >> ${USER_SHELL_RC}
-  log "Added Homebrew directory '${HOMEBREW_DIR}' to PATH in '${USER_SHELL_RC}'"
 
-  ${SHELL} -c 'echo $PATH'
+  log "Homebrew detected: ${HOMEBREW}"
+  log " "
+  log "Please add Homebrew directory '${HOMEBREW_DIR}' to PATH in '${USER_SHELL_RC}'"
+  log "----------------------------------------------------------------------------"
+  log "   echo PATH=${HOMEBREW_DIR}:"'$PATH'" >> ${USER_SHELL_RC}   "
+  log "----------------------------------------------------------------------------"
+  log " "
 }
 
 # Fail fast with a concise message when not using bash
