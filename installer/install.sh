@@ -29,6 +29,10 @@ setupHomebrew() {
   log "Homebrew detected: ${HOMEBREW}"
 
   HOMEBREW_DIR=$(dirname ${HOMEBREW})
+  if ! [ -f "${USER_SHELL_RC}" ]; then
+    touch ${USER_SHELL_RC}
+    log "Created user shell (${USER_SHELL}) config file: '${USER_SHELL_RC}'"
+  fi
   echo "\nPATH=${HOMEBREW_DIR}:${PATH}" >> ${USER_SHELL_RC}
   log "Added Homebrew directory '${HOMEBREW_DIR}' to PATH in '${USER_SHELL_RC}'"
 
