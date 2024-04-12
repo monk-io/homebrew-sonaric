@@ -9,7 +9,7 @@ set -u
 OS="$(uname)"
 NAME="Sonaric installer"
 USER_SHELL=$(basename $SHELL)
-USER_SHELL_RC="~/.${SHELL}rc"
+USER_SHELL_RC="~/.${USER_SHELL}rc"
 
 log() {
   printf "%s\n" "$@"
