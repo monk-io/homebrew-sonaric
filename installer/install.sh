@@ -6,10 +6,10 @@
 
 set -u
 
-abort() {
-  printf "%s\n" "$@" >&2
-  exit 1
-}
+OS="$(uname)"
+NAME="Sonaric installer"
+USER_SHELL=$(basename $SHELL)
+USER_SHELL_RC="~/.${SHELL}rc"
 
 log() {
   printf "%s\n" "$@"
@@ -17,6 +17,22 @@ log() {
 
 warn() {
   printf "[Warning] %s\n" "$(log "$1")" >&2
+}
+
+abort() {
+  printf "%s\n" "$@" >&2
+  exit 1
+}
+
+setupHomebrew() {
+  HOMEBREW=${1}
+  log "Homebrew detected: ${HOMEBREW}"
+
+  HOMEBREW_DIR=$(dirname ${HOMEBREW})
+  echo "\nPATH=${HOMEBREW_DIR}:${PATH}" >> ${USER_SHELL_RC}
+  log "Added Homebrew directory '${HOMEBREW_DIR}' to PATH in '${USER_SHELL_RC}'"
+
+  ${SHELL} -c 'echo $PATH'
 }
 
 # Fail fast with a concise message when not using bash
@@ -43,10 +59,6 @@ if [[ -n "${POSIXLY_CORRECT+1}" ]]; then
   abort 'Bash must not run in POSIX mode. Please unset POSIXLY_CORRECT and try again.'
 fi
 
-NAME="Sonaric installer"
-
-# First check OS.
-OS="$(uname)"
 if [[ "${OS}" == "Linux" ]]; then
   ON_LINUX=1
 elif [[ "${OS}" == "Darwin" ]]; then
@@ -59,11 +71,9 @@ HOMEBREW=$(which brew 2>/dev/null)
 if [ -x "$(command -v ${HOMEBREW})" ]; then
   log "Homebrew automaticaly detected: ${HOMEBREW}"
 elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
-  HOMEBREW=/usr/local/bin/brew
-  log "Homebrew detected: ${HOMEBREW}"
+  setupHomebrew "/usr/local/bin/brew"
 elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
-  HOMEBREW=/opt/homebrew/bin/brew
-  log "Homebrew detected: ${HOMEBREW}"
+  setupHomebrew "/opt/homebrew/bin/brew"
 else
   log "Homebrew is not installed in your system, let's change it"
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -72,11 +82,9 @@ else
   if [ -x "$(command -v ${HOMEBREW})" ]; then
     log "Homebrew automaticaly detected: ${HOMEBREW}"
   elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
-    HOMEBREW=/usr/local/bin/brew
-    log "Homebrew detected: ${HOMEBREW}"
+    setupHomebrew "/usr/local/bin/brew"
   elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
-    HOMEBREW=/opt/homebrew/bin/brew
-    log "Homebrew detected: ${HOMEBREW}"
+    setupHomebrew "/opt/homebrew/bin/brew"
   else
     abort "Can not detect Homebrew, please follow the instruction on the screen and run this script again"
   fi
