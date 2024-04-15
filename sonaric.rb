@@ -31,4 +31,9 @@ class Sonaric < Formula
       sonaric machine upgrade
     EOS
   end
+
+  service do
+    run [opt_bin/"sonaricd"]
+    keep_alive true
+  end
 end
