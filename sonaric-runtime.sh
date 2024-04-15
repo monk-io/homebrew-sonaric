@@ -3,12 +3,15 @@
 while true; do
   case $(podman machine inspect --format '{{.State}}') in
     stopped)
+      # Start default podman machine
       podman machine start
       ;;
     running)
-      echo "Machine is already running"
+      # Machine is already running
+      sleep 60
       ;;
     *)
+      # Initialize default podman machine
       podman machine init --now --rootful
       ;;
   esac
