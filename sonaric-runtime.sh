@@ -1,10 +1,22 @@
 #!/bin/bash
 
+PODMAN=$(which podman 2>/dev/null)
+if ! [ -x "$(command -v ${PODMAN})" ]; then
+  if [ -x "$(command -v /usr/local/bin/podman)" ]; then
+    PODMAN="/usr/local/bin/podman"
+  elif [ -x "$(command -v /opt/homebrew/bin/podman)" ]; then
+    PODMAN="/opt/homebrew/bin/podman"
+  else
+    echo "ERROR: podman not found"
+    exit 1
+  fi
+fi
+
 while true; do
-  case $(podman machine inspect --format '{{.State}}') in
+  case $(${PODMAN} machine inspect --format '{{.State}}') in
     stopped)
       # Start default podman machine
-      podman machine start
+      ${PODMAN} machine start
       ;;
     running)
       # Machine is already running
@@ -12,7 +24,7 @@ while true; do
       ;;
     *)
       # Initialize default podman machine
-      podman machine init --now --rootful
+      ${PODMAN} machine init --now --rootful
       ;;
   esac
 
