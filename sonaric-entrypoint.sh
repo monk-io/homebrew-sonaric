@@ -7,7 +7,7 @@ if ! [ -x "$(command -v ${PODMAN})" ]; then
   elif [ -x "$(command -v /opt/homebrew/bin/podman)" ]; then
     PODMAN="/opt/homebrew/bin/podman"
   else
-    echo "ERROR: podman not found"
+    >&2 echo "ERROR: podman not found"
     exit 1
   fi
 fi
@@ -19,14 +19,14 @@ if ! [ -x "$(command -v ${sonaricd})" ]; then
   elif [ -x "$(command -v /opt/homebrew/bin/sonaricd)" ]; then
     SONARICD="/opt/homebrew/bin/sonaricd"
   else
-    echo "ERROR: sonaricd not found"
+    >&2 echo "ERROR: sonaricd not found"
     exit 1
   fi
 fi
 
 RUNNING=false
 while ! [ $RUNNING ]; do
-  case $(${PODMAN} machine inspect --format '{{.State}}') in
+  case $(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null) in
     stopped)
       # Start default podman machine
       ${PODMAN} machine start
