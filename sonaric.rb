@@ -1,12 +1,12 @@
 class Sonaric < Formula
   desc "Sonaric Network: the AI-powered backbone for all blockchains."
   homepage "https://sonaric.xyz"
-  version "0.0.8"
+  version "0.0.9"
 
-  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.0.8.tar.gz"
-  sha256_x64 = "0eb0ca1f7adda36a71e198e6c825bb0cb20cffbd8d8960a0c1d3741768d4b5e1"
-  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.0.8.tar.gz"
-  sha256_arm64 = "2b7567fecf225d0b3af209cca629ccc5d13684435260f3b69154f5a4cd41c95e"
+  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.0.9.tar.gz"
+  sha256_x64 = "0a87d28d958a14af265f508f0994b946b606df200f0eadb01cfef986f5238086"
+  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.0.9.tar.gz"
+  sha256_arm64 = "de40b625ea70898eeadc94b1508407a07b50101e05319a50b865be7a00e5a1aa"
 
   if Hardware::CPU.intel?
     sha256 sha256_x64
@@ -30,10 +30,5 @@ class Sonaric < Formula
     Upgrade sonaric daemon inside the sonaric machine to the latest version
       sonaric machine upgrade
     EOS
-  end
-
-  service do
-    run [opt_bin/"sonaricd"]
-    keep_alive true
   end
 end
