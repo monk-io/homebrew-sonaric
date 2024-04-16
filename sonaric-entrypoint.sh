@@ -25,10 +25,11 @@ if ! [ -x "$(command -v ${sonaricd})" ]; then
 fi
 
 RUNNING=false
-while ! [ $RUNNING ]; do
+while [[ "$RUNNING" != "true" ]]; do
   case $(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null) in
     stopped)
       # Start default podman machine
+      echo "Podman machine starting..."
       ${PODMAN} machine start
       ;;
     running)
@@ -37,6 +38,7 @@ while ! [ $RUNNING ]; do
       ;;
     *)
       # Initialize default podman machine
+      echo "Podman machine initializing..."
       ${PODMAN} machine init --now --rootful
       ;;
   esac
@@ -46,4 +48,5 @@ while ! [ $RUNNING ]; do
 done
 
 # Run sonaric daemon
+echo "Sonaric starting..."
 ${SONARICD}
