@@ -10,7 +10,7 @@ class Sonaric < Formula
 
   depends_on "podman" => :recommended
 
-  resource "entrypoint" do
+  resource "sonaric-entrypoint" do
     url "https://github.com/monk-io/homebrew-sonaric.git", branch: "main"
   end
 
@@ -25,8 +25,8 @@ class Sonaric < Formula
   def install
     resources.each do |r|
       case r.name
-      when "entrypoint"
-        bin.install r.cached_download/"entrypoint.sh" => "entrypoint"
+      when "sonaric-entrypoint"
+        bin.install r.cached_download/"sonaric-entrypoint.sh" => "sonaric-entrypoint"
       end
     end
     bin.install "sonaric" => "sonaric"
@@ -40,7 +40,7 @@ class Sonaric < Formula
   end
 
   service do
-    run [opt_bin/"entrypoint"]
+    run [opt_bin/"sonaric-entrypoint"]
     keep_alive true
   end
 end
