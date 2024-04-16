@@ -98,3 +98,14 @@ ${HOMEBREW} update
 log "Install the newest version of Sonaric"
 ${HOMEBREW} install monk-io/sonaric/sonaric
 
+log "Wait for Sonaric service..."
+sleep 3
+
+# brew services restart (formula|--all):
+#    Stop (if necessary) and start the service formula immediately and register it to launch at login (or boot).
+log "Sonaric service restarting..."
+${HOMEBREW} services restart sonaric
+
+log "Sonaric service info"
+${HOMEBREW} services info sonaric
+
