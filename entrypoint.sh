@@ -12,7 +12,20 @@ if ! [ -x "$(command -v ${PODMAN})" ]; then
   fi
 fi
 
-while true; do
+SONARICD=$(which sonaricd 2>/dev/null)
+if ! [ -x "$(command -v ${sonaricd})" ]; then
+  if [ -x "$(command -v /usr/local/bin/sonaricd)" ]; then
+    SONARICD="/usr/local/bin/sonaricd"
+  elif [ -x "$(command -v /opt/homebrew/bin/sonaricd)" ]; then
+    SONARICD="/opt/homebrew/bin/sonaricd"
+  else
+    echo "ERROR: sonaricd not found"
+    exit 1
+  fi
+fi
+
+RUNNING=false
+while ! [ $RUNNING ]; do
   case $(${PODMAN} machine inspect --format '{{.State}}') in
     stopped)
       # Start default podman machine
@@ -20,7 +33,7 @@ while true; do
       ;;
     running)
       # Machine is already running
-      sleep 60
+      RUNNING=true
       ;;
     *)
       # Initialize default podman machine
@@ -28,6 +41,9 @@ while true; do
       ;;
   esac
 
-  # Recheck machine each 5 min
-  sleep 300
+  # Recheck machine each 3 sec
+  sleep 3
 done
+
+# Run sonaric daemon
+${SONARICD}
