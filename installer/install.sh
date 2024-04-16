@@ -95,9 +95,6 @@ fi
 log "Fetching the newest version of Homebrew and installed packages"
 ${HOMEBREW} update
 
-log "Install the newest version of Sonaric Runtime"
-${HOMEBREW} install monk-io/sonaric/sonaric-runtime
-
 log "Install the newest version of Sonaric"
 ${HOMEBREW} install monk-io/sonaric/sonaric
 
