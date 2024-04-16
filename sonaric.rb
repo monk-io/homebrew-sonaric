@@ -8,6 +8,12 @@ class Sonaric < Formula
   url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.0.11.tar.gz"
   sha256_arm64 = "d5b4c5fb61e9848453866a4404a162956ebb4421d3ce9ffd79cabe420eb9e574"
 
+  depends_on "podman" => :recommended
+
+  resource "sonaric-entrypoint" do
+    url "https://github.com/monk-io/homebrew-sonaric.git", branch: "main"
+  end
+
   if Hardware::CPU.intel?
     sha256 sha256_x64
     url url_x64
@@ -16,19 +22,25 @@ class Sonaric < Formula
     url url_arm64
   end
 
-  depends_on "podman" => :recommended
-
   def install
+    resources.each do |r|
+      case r.name
+      when "sonaric-entrypoint"
+        bin.install r.cached_download/"sonaric-entrypoint.sh" => "sonaric-entrypoint"
+      end
+    end
     bin.install "sonaric" => "sonaric"
     bin.install "sonaricd" => "sonaricd"
   end
 
   def caveats; <<~EOS
-    Initialize the sonaric machine with sonaric daemon inside
-      sonaric machine init
-
-    Upgrade sonaric daemon inside the sonaric machine to the latest version
-      sonaric machine upgrade
+    Sonaric will be started automatically via brew services
+      brew services info sonaric
     EOS
+  end
+
+  service do
+    run [opt_bin/"sonaric-entrypoint"]
+    keep_alive true
   end
 end
