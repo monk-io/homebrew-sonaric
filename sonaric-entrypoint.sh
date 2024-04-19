@@ -47,6 +47,21 @@ while [[ "$RUNNING" != "true" ]]; do
   sleep 3
 done
 
+# Container runtime path lookup
+CR_PATH=$(${PODMAN} info --format '{{.Host.RemoteSocket.Path}}')
+if [ -S ${CR_PATH} ]; then
+  echo "Autodetected container runtime path: ${CR_PATH}"
+elif [ -S /run/podman/podman.sock ]; then
+  CR_PATH=/run/podman/podman.sock
+  echo "Selected default container runtime path: ${CR_PATH}"
+elif [ -S ~/.local/share/containers/podman/machine/podman.sock ]; then
+  CR_PATH=~/.local/share/containers/podman/machine/podman.sock
+  echo "Selected user container runtime path: ${CR_PATH}"
+else
+  >&2 echo "ERROR: cannot detect path to container runtime"
+  exit 1
+fi
+
 # Run sonaric daemon
 echo "Sonaric starting..."
-${SONARICD}
+${SONARICD} -m "unix://${CR_PATH}"
