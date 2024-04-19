@@ -48,7 +48,8 @@ while [[ "$RUNNING" != "true" ]]; do
 done
 
 # Container runtime path lookup
-CR_PATH=$(${PODMAN} info --format '{{.Host.RemoteSocket.Path}}')
+CR_PATH=$(${PODMAN} info --format '{{.Host.RemoteSocket.Path}}' 2>/dev/null)
+MACHINE_CR_PATH=$(${PODMAN} machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}' 2>/dev/null)
 if [ -S ${CR_PATH} ]; then
   echo "Autodetected container runtime path: ${CR_PATH}"
 elif [ -S /run/podman/podman.sock ]; then
@@ -57,6 +58,9 @@ elif [ -S /run/podman/podman.sock ]; then
 elif [ -S ~/.local/share/containers/podman/machine/podman.sock ]; then
   CR_PATH=~/.local/share/containers/podman/machine/podman.sock
   echo "Selected user container runtime path: ${CR_PATH}"
+elif [ -S ${MACHINE_CR_PATH} ]; then
+  CR_PATH=${MACHINE_CR_PATH}
+  echo "Selected machine container runtime path: ${CR_PATH}"
 else
   >&2 echo "ERROR: cannot detect path to container runtime"
   exit 1
