@@ -98,14 +98,43 @@ ${HOMEBREW} update
 log "Install the newest version of Sonaric"
 ${HOMEBREW} install monk-io/sonaric/sonaric
 
+PODMAN=$(which podman 2>/dev/null)
+if ! [ -x "$(command -v ${PODMAN})" ]; then
+  if [ -x "$(command -v /usr/local/bin/podman)" ]; then
+    PODMAN="/usr/local/bin/podman"
+  elif [ -x "$(command -v /opt/homebrew/bin/podman)" ]; then
+    PODMAN="/opt/homebrew/bin/podman"
+  else
+    abort "ERROR: podman not found"
+  fi
+fi
+
+log "Sonaric service stopping..."
+${HOMEBREW} services stop sonaric
+
+case $(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null) in
+  stopped)
+    # Start default podman machine
+    log "Podman machine starting..."
+    ${PODMAN} machine start
+    ;;
+  running)
+    log "Podman machine has started"
+    ;;
+  *)
+    # Initialize default podman machine
+    log "Podman machine initializing..."
+    ${PODMAN} machine init --now --rootful --disk-size 20 || abort "ERROR: podman machine can not be initialized"
+    ;;
+esac
+
+log "Check podman machines..."
+${PODMAN} machine ls
+
+log "Sonaric service starting..."
+${HOMEBREW} services start sonaric
+
 log "Wait for Sonaric service..."
 sleep 3
-
-# brew services restart (formula|--all):
-#    Stop (if necessary) and start the service formula immediately and register it to launch at login (or boot).
-log "Sonaric service restarting..."
-${HOMEBREW} services restart sonaric
-
-log "Sonaric service info"
 ${HOMEBREW} services info sonaric
 
