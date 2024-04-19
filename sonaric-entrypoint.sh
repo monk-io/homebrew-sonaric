@@ -39,7 +39,7 @@ while [[ "$RUNNING" != "true" ]]; do
     *)
       # Initialize default podman machine
       echo "Podman machine initializing..."
-      ${PODMAN} machine init --now --rootful
+      ${PODMAN} machine init --now --rootful --disk-size 20 || exit 1
       ;;
   esac
 
