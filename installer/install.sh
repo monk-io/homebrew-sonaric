@@ -24,7 +24,7 @@ abort() {
   exit 1
 }
 
-setupHomebrew() {
+setup_homebrew() {
   HOMEBREW=${1}
   HOMEBREW_DIR=$(dirname ${HOMEBREW})
 
@@ -61,21 +61,17 @@ if [[ -n "${POSIXLY_CORRECT+1}" ]]; then
   abort 'Bash must not run in POSIX mode. Please unset POSIXLY_CORRECT and try again.'
 fi
 
-if [[ "${OS}" == "Linux" ]]; then
-  ON_LINUX=1
-elif [[ "${OS}" == "Darwin" ]]; then
-  ON_MACOS=1
-else
-  abort "${NAME} is only supported on macOS and Linux."
+if [[ "${OS}" != "Darwin" ]]; then
+  abort "${NAME} is only supported on macOS."
 fi
 
 HOMEBREW=$(which brew 2>/dev/null)
 if [ -x "$(command -v ${HOMEBREW})" ]; then
   log "Homebrew automaticaly detected: ${HOMEBREW}"
 elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
-  setupHomebrew "/usr/local/bin/brew"
+  setup_homebrew "/usr/local/bin/brew"
 elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
-  setupHomebrew "/opt/homebrew/bin/brew"
+  setup_homebrew "/opt/homebrew/bin/brew"
 else
   log "Homebrew is not installed in your system, let's change it"
   bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -84,9 +80,9 @@ else
   if [ -x "$(command -v ${HOMEBREW})" ]; then
     log "Homebrew automaticaly detected: ${HOMEBREW}"
   elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
-    setupHomebrew "/usr/local/bin/brew"
+    setup_homebrew "/usr/local/bin/brew"
   elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
-    setupHomebrew "/opt/homebrew/bin/brew"
+    setup_homebrew "/opt/homebrew/bin/brew"
   else
     abort "Can not detect Homebrew, please follow the instruction on the screen and run this script again"
   fi
