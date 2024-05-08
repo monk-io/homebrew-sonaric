@@ -1,5 +1,22 @@
 #!/bin/bash
 
+EXPR="/bin/expr"
+SYSCTL="/usr/sbin/sysctl"
+
+NCPU=$(${SYSCTL} -n hw.ncpu 2>/dev/null)
+MEMSIZE_MB=$(${EXPR} $(${SYSCTL} -n hw.memsize 2>/dev/null) / 1024 / 1024 2>/dev/null)
+
+PODMAN_MACHINE_CPUS=""
+PODMAN_MACHINE_MEMORY=""
+
+if [ ${NCPU} -gt 0 ]; then
+  PODMAN_MACHINE_CPUS="--cpus ${NCPU}"
+fi
+
+if [ ${MEMSIZE_MB} -gt 0 ]; then
+  PODMAN_MACHINE_MEMORY="--memory ${MEMSIZE_MB}"
+fi
+
 PODMAN=$(which podman 2>/dev/null)
 if ! [ -x "$(command -v ${PODMAN})" ]; then
   if [ -x "$(command -v /usr/local/bin/podman)" ]; then
@@ -28,6 +45,14 @@ RUNNING=false
 while [[ "$RUNNING" != "true" ]]; do
   case $(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null) in
     stopped)
+      if [[ "${PODMAN_MACHINE_CPUS}" != "" ]]; then
+        echo "Podman machine set ${PODMAN_MACHINE_CPUS}"
+        ${PODMAN} machine set ${PODMAN_MACHINE_CPUS}
+      fi
+      if [[ "${PODMAN_MACHINE_MEMORY}" != "" ]]; then
+        echo "Podman machine set ${PODMAN_MACHINE_MEMORY}"
+        ${PODMAN} machine set ${PODMAN_MACHINE_MEMORY}
+      fi
       # Start default podman machine
       echo "Podman machine starting..."
       ${PODMAN} machine start
@@ -39,7 +64,7 @@ while [[ "$RUNNING" != "true" ]]; do
     *)
       # Initialize default podman machine
       echo "Podman machine initializing..."
-      ${PODMAN} machine init --now --rootful --disk-size 20 || exit 1
+      ${PODMAN} machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} || exit 1
       ;;
   esac
 
