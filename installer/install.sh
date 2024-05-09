@@ -5,6 +5,8 @@
 # shellcheck disable=SC2312
 set -u
 
+NAME="Sonaric installer"
+
 log() {
   echo "$@"
 }
@@ -43,6 +45,7 @@ addToPath "/sbin" "/usr/sbin" "/usr/local/sbin"
 addToPath "/bin" "/usr/bin" "/usr/local/bin"
 addToPath "/opt/homebrew/bin"
 
+TR="$(which tr 2>/dev/null)"
 EXPR="$(which expr 2>/dev/null)"
 UNAME="$(which uname 2>/dev/null)"
 SYSCTL="$(which sysctl 2>/dev/null)"
@@ -50,13 +53,18 @@ DIRNAME="$(which dirname 2>/dev/null)"
 BASENAME="$(which basename 2>/dev/null)"
 
 OS="$(${UNAME} 2>/dev/null)"
-NAME="Sonaric installer"
-
+# Check if we are on mac
 if [[ "${OS}" != "Darwin" ]]; then
   abort "${NAME} is only supported on macOS."
 fi
 
-USER_SHELL=$(${BASENAME} $SHELL 2>/dev/null)
+export PATH="${PATH}"
+log "${NAME} detects paths:"
+for p in $(echo ${PATH} | ${TR} ":" " "); do
+  log " - ${p}"
+done
+
+USER_SHELL=$(${BASENAME} ${SHELL} 2>/dev/null)
 USER_SHELL_RC="~/.${USER_SHELL}rc"
 
 NCPU=$(${SYSCTL} -n hw.ncpu 2>/dev/null)
