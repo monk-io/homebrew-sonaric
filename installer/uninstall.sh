@@ -3,25 +3,33 @@
 # We don't need return codes for "$(command)", only stdout is needed.
 # Allow `[[ -n "$(command)" ]]`, `func "$(command)"`, pipes, etc.
 # shellcheck disable=SC2312
-
 set -u
 
-OS="$(uname)"
-NAME="Sonaric uninstaller"
-USER_SHELL=$(basename $SHELL)
-USER_SHELL_RC="~/.${USER_SHELL}rc"
-
 log() {
-  printf "%s\n" "$@"
-}
-
-warn() {
-  printf "[Warning] %s\n" "$(log "$1")" >&2
+  echo "$@"
 }
 
 abort() {
-  printf "%s\n" "$@" >&2
+  echo "ERROR: $@" >&2
   exit 1
+}
+
+addToPath(){
+  for arg in $@; do
+    if [ -d "${arg}" ]; then
+      if [[ "${PATH}" == "" ]]; then
+        PATH="${arg}"
+      else
+        case ":${PATH}:" in
+          *:"${arg}":*)
+            ;;
+          *)
+            PATH="${arg}:${PATH}"
+            ;;
+        esac
+      fi
+    fi
+  done
 }
 
 # Fail fast with a concise message when not using bash
@@ -31,51 +39,28 @@ if [ -z "${BASH_VERSION:-}" ]; then
   abort "Bash is required to interpret this script."
 fi
 
-# Check if script is run with force-interactive mode in CI
-if [[ -n "${CI-}" && -n "${INTERACTIVE-}" ]]; then
-  abort "Cannot run force-interactive mode in CI."
-fi
+addToPath "/sbin" "/usr/sbin" "/usr/local/sbin"
+addToPath "/bin" "/usr/bin" "/usr/local/bin"
+addToPath "/opt/homebrew/bin"
 
-# Check if both `INTERACTIVE` and `NONINTERACTIVE` are set
-# Always use single-quoted strings with `exp` expressions
-# shellcheck disable=SC2016
-if [[ -n "${INTERACTIVE-}" && -n "${NONINTERACTIVE-}" ]]; then
-  abort 'Both `$INTERACTIVE` and `$NONINTERACTIVE` are set. Please unset at least one variable and try again.'
-fi
-
-# Check if script is run in POSIX mode
-if [[ -n "${POSIXLY_CORRECT+1}" ]]; then
-  abort 'Bash must not run in POSIX mode. Please unset POSIXLY_CORRECT and try again.'
-fi
+OS="$(uname)"
+NAME="Sonaric uninstaller"
 
 if [[ "${OS}" != "Darwin" ]]; then
   abort "${NAME} is only supported on macOS."
 fi
 
+USER_SHELL=$(basename $SHELL)
+USER_SHELL_RC="~/.${USER_SHELL}rc"
+
 HOMEBREW=$(which brew 2>/dev/null)
-if [ -x "$(command -v ${HOMEBREW})" ]; then
-  log "Homebrew automaticaly detected: ${HOMEBREW}"
-elif [ -x "$(command -v /usr/local/bin/brew)" ]; then
-  HOMEBREW="/usr/local/bin/brew"
-  log "Homebrew detected: ${HOMEBREW}"
-elif [ -x "$(command -v /opt/homebrew/bin/brew)" ]; then
-  HOMEBREW="/opt/homebrew/bin/brew"
-  log "Homebrew detected: ${HOMEBREW}"
-else
+if [ ! -x "$(command -v ${HOMEBREW})" ]; then
   HOMEBREW=""
   log "Homebrew is not installed in your system"
 fi
 
 PODMAN=$(which podman 2>/dev/null)
-if [ -x "$(command -v ${PODMAN})" ]; then
-  log "Podman automaticaly detected: ${PODMAN}"
-elif [ -x "$(command -v /usr/local/bin/podman)" ]; then
-  PODMAN="/usr/local/bin/podman"
-  log "Podman detected: ${PODMAN}"
-elif [ -x "$(command -v /opt/homebrew/bin/podman)" ]; then
-  PODMAN="/opt/homebrew/bin/podman"
-  log "Podman detected: ${PODMAN}"
-else
+if [ ! -x "$(command -v ${PODMAN})" ]; then
   PODMAN=""
   log "Podman is not installed in your system"
 fi
@@ -85,7 +70,7 @@ if [ "${HOMEBREW}" != "" ]; then
   ${HOMEBREW} services stop sonaric
   sleep 3
 
-  log "Sonaric service uninstalling..."
+  log "Sonaric uninstalling..."
   ${HOMEBREW} uninstall -f --ignore-dependencies sonaric
 fi
 
@@ -97,3 +82,11 @@ if [ "${PODMAN}" != "" ]; then
   log "Podman machine removing..."
   ${PODMAN} machine rm -f
 fi
+
+if [ "${HOMEBREW}" != "" ]; then
+  log "Podman uninstalling..."
+  ${HOMEBREW} uninstall -f --ignore-dependencies podman
+fi
+
+rm -rf ~/.local/share/containers
+rm -rf ~/.config/containers
