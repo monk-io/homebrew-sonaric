@@ -1,6 +1,11 @@
 #!/bin/bash
 
+# We don't need return codes for "$(command)", only stdout is needed.
+# Allow `[[ -n "$(command)" ]]`, `func "$(command)"`, pipes, etc.
+# shellcheck disable=SC2312
 set -u
+
+NAME="Sonaric entrypoint"
 
 log() {
   echo "$@"
@@ -40,8 +45,22 @@ addToPath "/sbin" "/usr/sbin" "/usr/local/sbin"
 addToPath "/bin" "/usr/bin" "/usr/local/bin"
 addToPath "/opt/homebrew/bin"
 
+TR="$(which tr 2>/dev/null)"
 EXPR="$(which expr 2>/dev/null)"
+UNAME="$(which uname 2>/dev/null)"
 SYSCTL="$(which sysctl 2>/dev/null)"
+
+OS="$(${UNAME} 2>/dev/null)"
+# Check if we are on mac
+if [[ "${OS}" != "Darwin" ]]; then
+  abort "${NAME} is only supported on macOS."
+fi
+
+export PATH="${PATH}"
+log "${NAME} detects paths:"
+for p in $(echo ${PATH} | ${TR} ":" " "); do
+  log " - ${p}"
+done
 
 NCPU=$(${SYSCTL} -n hw.ncpu 2>/dev/null)
 MEMSIZE_MB=$(${EXPR} $(${SYSCTL} -n hw.memsize 2>/dev/null) / 1024 / 1024 2>/dev/null)
@@ -58,12 +77,12 @@ if [ ${MEMSIZE_MB} -gt 0 ]; then
 fi
 
 PODMAN=$(which podman 2>/dev/null)
-if ! [ -x "$(command -v ${PODMAN})" ]; then
+if [ ! -x "$(command -v ${PODMAN})" ]; then
   abort "podman not found"
 fi
 
 SONARICD=$(which sonaricd 2>/dev/null)
-if ! [ -x "$(command -v ${SONARICD})" ]; then
+if [ ! -x "$(command -v ${SONARICD})" ]; then
   abort "sonaricd not found"
 fi
 
