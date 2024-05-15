@@ -46,6 +46,7 @@ addToPath "/bin" "/usr/bin" "/usr/local/bin"
 addToPath "/opt/homebrew/bin"
 
 TR="$(which tr 2>/dev/null)"
+ARCH="$(which arch 2>/dev/null)"
 EXPR="$(which expr 2>/dev/null)"
 UNAME="$(which uname 2>/dev/null)"
 SYSCTL="$(which sysctl 2>/dev/null)"
@@ -56,6 +57,18 @@ if [[ "${OS}" != "Darwin" ]]; then
   abort "${NAME} is only supported on macOS."
 fi
 
+OS_ARCH=amd64
+case $(${ARCH}) in
+  arm | arm64 | aarch | aarch64)
+    OS_ARCH=arm64
+    ;;
+  *)
+    OS_ARCH=amd64
+    ;;
+esac
+
+log "${NAME} started on: ${OS} ${OS_ARCH}"
+
 export PATH="${PATH}"
 log "${NAME} detects paths:"
 for p in $(echo ${PATH} | ${TR} ":" " "); do
@@ -64,9 +77,17 @@ done
 
 NCPU=$(${SYSCTL} -n hw.ncpu 2>/dev/null)
 MEMSIZE_MB=$(${EXPR} $(${SYSCTL} -n hw.memsize 2>/dev/null) / 1024 / 1024 2>/dev/null)
+log "${NAME} detects resources: NCPU=${NCPU} and MEMSIZE=${MEMSIZE_MB}(MB)"
+
+VM_OS_BUILD=""
+if [[ "${OS_ARCH}" == "arm64" ]]; then
+  # ISSUE: https://github.com/containers/podman/issues/22708
+  VM_OS_BUILD="39.20240407.3.0"
+fi
 
 PODMAN_MACHINE_CPUS=""
 PODMAN_MACHINE_MEMORY=""
+PODMAN_MACHINE_IMAGE=""
 
 if [ ${NCPU} -gt 0 ]; then
   PODMAN_MACHINE_CPUS="--cpus ${NCPU}"
@@ -74,6 +95,11 @@ fi
 
 if [ ${MEMSIZE_MB} -gt 0 ]; then
   PODMAN_MACHINE_MEMORY="--memory ${MEMSIZE_MB}"
+fi
+
+if [[ "${VM_OS_BUILD}" != "" ]]; then
+  log "${NAME} uses build of VM OS: fedora coreos ${VM_OS_BUILD} applehv aarch64"
+  PODMAN_MACHINE_IMAGE="--image https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${VM_OS_BUILD}/aarch64/fedora-coreos-${VM_OS_BUILD}-applehv.aarch64.raw.gz"
 fi
 
 PODMAN=$(which podman 2>/dev/null)
@@ -109,7 +135,7 @@ while [[ "$RUNNING" != "true" ]]; do
     *)
       # Initialize default podman machine
       log "Podman machine initializing..."
-      ${PODMAN} machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} || exit 1
+      ${PODMAN} machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} ${PODMAN_MACHINE_IMAGE} || abort "Podman machine initializing failed"
       ;;
   esac
 
