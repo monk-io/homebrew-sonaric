@@ -80,10 +80,6 @@ fi
 if [ "${HOMEBREW}" != "" ]; then
   log "Sonaric service stopping..."
   ${HOMEBREW} services stop sonaric
-  sleep 3
-
-  log "Sonaric uninstalling..."
-  ${HOMEBREW} uninstall -f --ignore-dependencies sonaric
 fi
 
 if [ "${PODMAN}" != "" ]; then
@@ -96,6 +92,9 @@ if [ "${PODMAN}" != "" ]; then
 fi
 
 if [ "${HOMEBREW}" != "" ]; then
+  log "Sonaric uninstalling..."
+  ${HOMEBREW} uninstall -f --ignore-dependencies sonaric
+
   log "Podman uninstalling..."
   ${HOMEBREW} uninstall -f --ignore-dependencies podman
 fi
