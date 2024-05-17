@@ -1,12 +1,12 @@
 class Sonaric < Formula
   desc "Sonaric Network: the AI-powered backbone for all blockchains."
   homepage "https://sonaric.xyz"
-  version "0.1.1"
+  version "0.1.2"
 
-  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.1.1.tar.gz"
-  sha256_x64 = "fcea94a44abf3ad816e5ed2c4d267117a92b40f9b71364d01af0ad3aa1ffe9e9"
-  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.1.1.tar.gz"
-  sha256_arm64 = "fba25b8a17247fb05f1551a6226c6337b381f1edb3f5a6bf74830f6a2fff7e26"
+  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.1.2.tar.gz"
+  sha256_x64 = "6c9a6073d9c51fe1c1b2c3ca0fa71527ea9cc69ab5e273479e7ed91f6603f4bb"
+  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.1.2.tar.gz"
+  sha256_arm64 = "5afe1993cda7111cffce96d2fd769d3350e6918645ac1dddec150665084c4e00"
 
   depends_on "podman" => :recommended
 
