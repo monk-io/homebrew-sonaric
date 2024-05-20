@@ -11,12 +11,16 @@ log() {
   echo "$@"
 }
 
+warn() {
+  echo "WARNING: $@"
+}
+
 abort() {
   echo "ERROR: $@" >&2
   exit 1
 }
 
-addToPath(){
+add_to_path(){
   for arg in $@; do
     if [ -d "${arg}" ]; then
       if [[ "${PATH}" == "" ]]; then
@@ -34,6 +38,18 @@ addToPath(){
   done
 }
 
+# check_command {{name}} {{path}}
+check_command(){
+  local n="${1}"
+  local p="${2}"
+  if [[ "${p}" == "" ]]; then
+    abort "${n} not found"
+  fi
+  if [ ! -x "$(command -v ${p})" ]; then
+    abort "${p} not executable"
+  fi
+}
+
 # Fail fast with a concise message when not using bash
 # Single brackets are needed here for POSIX compatibility
 # shellcheck disable=SC2292
@@ -41,15 +57,24 @@ if [ -z "${BASH_VERSION:-}" ]; then
   abort "Bash is required to interpret this script."
 fi
 
-addToPath "/sbin" "/usr/sbin" "/usr/local/sbin"
-addToPath "/bin" "/usr/bin" "/usr/local/bin"
-addToPath "/opt/homebrew/bin"
+add_to_path "/sbin" "/usr/sbin" "/usr/local/sbin"
+add_to_path "/bin" "/usr/bin" "/usr/local/bin"
+add_to_path "/opt/homebrew/bin"
 
-TR="$(which tr 2>/dev/null)"
-ARCH="$(which arch 2>/dev/null)"
-EXPR="$(which expr 2>/dev/null)"
-UNAME="$(which uname 2>/dev/null)"
-SYSCTL="$(which sysctl 2>/dev/null)"
+TR=$(which tr 2>/dev/null)
+check_command "tr" "${TR}"
+ARCH=$(which arch 2>/dev/null)
+check_command "arch" "${ARCH}"
+EXPR=$(which expr 2>/dev/null)
+check_command "expr" "${EXPR}"
+UNAME=$(which uname 2>/dev/null)
+check_command "uname" "${UNAME}"
+SYSCTL=$(which sysctl 2>/dev/null)
+check_command "sysctl" "${SYSCTL}"
+PODMAN=$(which podman 2>/dev/null)
+check_command "podman" "${PODMAN}"
+SONARICD=$(which sonaricd 2>/dev/null)
+check_command "sonaricd" "${SONARICD}"
 
 OS="$(${UNAME} 2>/dev/null)"
 # Check if we are on mac
@@ -102,19 +127,12 @@ if [[ "${VM_OS_BUILD}" != "" ]]; then
   PODMAN_MACHINE_IMAGE="--image https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${VM_OS_BUILD}/aarch64/fedora-coreos-${VM_OS_BUILD}-applehv.aarch64.raw.gz"
 fi
 
-PODMAN=$(which podman 2>/dev/null)
-if [ ! -x "$(command -v ${PODMAN})" ]; then
-  abort "podman not found"
-fi
-
-SONARICD=$(which sonaricd 2>/dev/null)
-if [ ! -x "$(command -v ${SONARICD})" ]; then
-  abort "sonaricd not found"
-fi
-
 RUNNING=false
 while [[ "$RUNNING" != "true" ]]; do
-  case $(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null) in
+  PODMAN_MACHINE_STATE=$(${PODMAN} machine inspect --format '{{.State}}' 2>/dev/null)
+  log "${NAME} detects podman machine state: '${PODMAN_MACHINE_STATE}'"
+
+  case ${PODMAN_MACHINE_STATE} in
     stopped)
       if [[ "${PODMAN_MACHINE_CPUS}" != "" ]]; then
         log "Podman machine set ${PODMAN_MACHINE_CPUS}"
@@ -161,6 +179,6 @@ else
   abort "cannot detect path to container runtime"
 fi
 
-# Run sonaric daemon
-log "Sonaric starting..."
+# Start sonaric daemon
+log "Sonaric daemon starting..."
 ${SONARICD} -m "unix://${CR_PATH}"
