@@ -63,6 +63,8 @@ add_to_path "/opt/homebrew/bin"
 
 TR=$(which tr 2>/dev/null)
 check_command "tr" "${TR}"
+PS=$(which ps 2>/dev/null)
+check_command "ps" "${PS}"
 ARCH=$(which arch 2>/dev/null)
 check_command "arch" "${ARCH}"
 EXPR=$(which expr 2>/dev/null)
@@ -179,6 +181,44 @@ else
   abort "cannot detect path to container runtime"
 fi
 
+###
+# trap
+###
+# 0     0        On exit from shell
+# 1     SIGHUP   Clean tidyup
+# 2     SIGINT   Interrupt (CTRL-C)
+# 3     SIGQUIT  Quit
+# 6     SIGABRT  Cancel
+# 9     SIGKILL  Die Now (cannot be trap'ped)
+# 14    SIGALRM  Alarm Clock
+# 15    SIGTERM  Terminate
+
+daemon_shutdown(){
+  local pid=${1}
+  local itr=0
+  local num=0
+  while ${PS} -o pid= -p ${pid} >/dev/null; do
+    itr=$((itr + 1))
+    log "${itr}) Sonaric daemon stopping (PID=${pid})..."
+
+    num=$((num + 1))
+    if [[ ${num} -ge 3 ]]; then
+      num=0
+      log " - send SIGTERM signal to Sonaric daemon (PID=${pid})..."
+      kill -15 ${pid}
+    else
+      sleep 5
+    fi
+  done
+
+  log "Podman machine stopping..."
+  ${PODMAN} machine stop
+}
+
 # Start sonaric daemon
 log "Sonaric daemon starting..."
-${SONARICD} -m "unix://${CR_PATH}"
+${SONARICD} -m "unix://${CR_PATH}" &
+SONARICD_PID=$!
+log "Sonaric daemon PID=${SONARICD_PID}"
+trap "daemon_shutdown ${SONARICD_PID}" 1 2 3 6 15
+wait "${SONARICD_PID}"
