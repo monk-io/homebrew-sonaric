@@ -112,7 +112,10 @@ if [ ! -x "$(command -v ${BREW})" ]; then
 fi
 
 log "Fetching the newest version of Homebrew and installed packages"
-${BREW} update
+${BREW} update --auto-update -q -f
+
+log "Applying the newest version of Homebrew and installed packages"
+${BREW} upgrade -q -f
 
 log "Install the newest version of Sonaric"
 ${BREW} install ${BREW_SONARIC_PKG}
