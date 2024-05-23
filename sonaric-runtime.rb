@@ -4,18 +4,10 @@ class SonaricRuntime < Formula
   version "0.0.1"
 
   depends_on "podman"
-
-  resource "sonaric-runtime" do
-    url "https://github.com/monk-io/homebrew-sonaric.git", branch: "main"
-  end
+  url "https://github.com/monk-io/homebrew-sonaric.git", branch: "main"
 
   def install
-    resources.each do |r|
-      case r.name
-      when "sonaric-runtime"
-        bin.install r.cached_download/"sonaric-runtime.sh" => "sonaric-runtime"
-      end
-    end
+    bin.install "sonaric-runtime.sh" => "sonaric-runtime"
   end
 
   def caveats; <<~EOS
