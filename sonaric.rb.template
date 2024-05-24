@@ -8,11 +8,7 @@ class Sonaric < Formula
   url_arm64 = "_BREW_ARM_URL"
   sha256_arm64 = "_BREW_ARM_SHA256"
 
-  depends_on "podman" => :recommended
-
-  resource "sonaric-entrypoint" do
-    url "https://github.com/monk-io/homebrew-sonaric.git", branch: "main"
-  end
+  depends_on "monk-io/sonaric/sonaric-runtime"
 
   if Hardware::CPU.intel?
     sha256 sha256_x64
@@ -22,15 +18,21 @@ class Sonaric < Formula
     url url_arm64
   end
 
+  resource "sonaric-entrypoint" do
+    sha256 "db76d91e488f2285f4a4bbab75523677d3c34ea6c28ae0dfe99e44e31aeccd66"
+    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-entrypoint.sh"
+  end
+
   def install
+    bin.install "sonaric" => "sonaric"
+    bin.install "sonaricd" => "sonaricd"
+
     resources.each do |r|
       case r.name
       when "sonaric-entrypoint"
-        bin.install r.cached_download/"sonaric-entrypoint.sh" => "sonaric-entrypoint"
+        bin.install r.cached_download => "sonaric-entrypoint"
       end
     end
-    bin.install "sonaric" => "sonaric"
-    bin.install "sonaricd" => "sonaricd"
   end
 
   def caveats; <<~EOS
