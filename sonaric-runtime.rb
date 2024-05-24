@@ -5,18 +5,11 @@ class SonaricRuntime < Formula
 
   depends_on "podman"
 
-  resource "sonaric-runtime" do
-    sha256 "55a830fbd30bf7d8a9da8b614667cd19c7a0946fbccdb19bde3f4fa8a419b56f"
-    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-runtime.sh"
-  end
+  sha256 "55a830fbd30bf7d8a9da8b614667cd19c7a0946fbccdb19bde3f4fa8a419b56f"
+  url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-runtime.sh"
 
   def install
-    resources.each do |r|
-      case r.name
-      when "sonaric-runtime"
-        bin.install r.cached_download => "sonaric-runtime"
-      end
-    end
+    bin.install "sonaric-runtime.sh" => "sonaric-runtime"
   end
 
   def caveats; <<~EOS
