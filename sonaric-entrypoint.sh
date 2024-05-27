@@ -169,7 +169,7 @@ daemon_shutdown(){
 
 # Start sonaric daemon
 log "Sonaric daemon starting..."
-sonaricd -m "unix://${CR_PATH}" &
+sonaricd --truncate-log -m "unix://${CR_PATH}" &
 SONARICD_PID=$!
 
 log "Sonaric daemon started (PID=${SONARICD_PID})"
