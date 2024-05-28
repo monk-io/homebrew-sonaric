@@ -19,7 +19,7 @@ class Sonaric < Formula
   end
 
   resource "sonaric-entrypoint" do
-    sha256 "db76d91e488f2285f4a4bbab75523677d3c34ea6c28ae0dfe99e44e31aeccd66"
+    sha256 "f03c11a3035f4a82f7974d361ebfa6591e5529e108f8acca1d97bbac85a71ee6"
     url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-entrypoint.sh"
   end
 
