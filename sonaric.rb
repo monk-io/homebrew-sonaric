@@ -1,12 +1,12 @@
 class Sonaric < Formula
   desc "Sonaric Network: the AI-powered backbone for all blockchains."
   homepage "https://sonaric.xyz"
-  version "0.1.4"
+  version "0.1.5"
 
-  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.1.4.tar.gz"
-  sha256_x64 = "bf34e7db0b2bac466c57d7ee11335668f61f58d2e337b3b2105690e0d9659dc0"
-  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.1.4.tar.gz"
-  sha256_arm64 = "e8fae11043e904c7b67c738446d8ae81c58ad928006e5ec4f720db0f0b1d01ff"
+  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v0.1.5.tar.gz"
+  sha256_x64 = "4284528ab224d3f0ed7b186d8edd36879030bc5b85a36310197f51e8061139ef"
+  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v0.1.5.tar.gz"
+  sha256_arm64 = "2e469a2454308f5a6f98ea98c071db116561ba18b7a0914838848dc5b1376d50"
 
   depends_on "monk-io/sonaric/sonaric-runtime"
 
