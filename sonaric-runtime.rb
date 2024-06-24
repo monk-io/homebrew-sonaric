@@ -5,7 +5,7 @@ class SonaricRuntime < Formula
 
   depends_on "podman"
 
-  sha256 "55a830fbd30bf7d8a9da8b614667cd19c7a0946fbccdb19bde3f4fa8a419b56f"
+  sha256 "dd9f6e10b434f9bce8bc304435762e74d23efab74076eb6fb68cf2dc4abfa0c5"
   url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-runtime.sh"
 
   def install
