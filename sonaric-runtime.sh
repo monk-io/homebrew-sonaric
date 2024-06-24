@@ -151,6 +151,36 @@ while [[ "$RUNNING" != "true" ]]; do
   sleep 3
 done
 
+# Sync time service for the time synchronisation between VM and Host each 1 min
+echo "[Unit]
+Description=System time sync
+
+[Service]
+User=root
+Group=root
+ExecStart=sh -c 'while true; do hwclock -s; sleep 60; done'
+Restart=on-failure
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
+" | podman machine ssh tee /etc/systemd/system/systime-sync.service || warn "Create systime-sync.service"
+
+podman machine ssh chmod 664 /etc/systemd/system/systime-sync.service || warn "Update permissions for systime-sync.service"
+
+# If the service was disabled for some reason we should enable it on each restart
+podman machine ssh systemctl enable --now systime-sync || warn "Enable systime-sync.service"
+sleep 3
+podman machine ssh systemctl status systime-sync.service
+
+# If service was changed we should restart it to apply changes
+podman machine ssh systemctl restart systime-sync.service || warn "Restart systime-sync.service"
+sleep 3
+podman machine ssh systemctl status systime-sync.service
+
+log "Host: $(date)"
+log "=VM=: $(podman machine ssh date)"
+
 ###
 # trap
 ###
