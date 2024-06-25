@@ -19,8 +19,8 @@ class Sonaric < Formula
   end
 
   resource "sonaric-entrypoint" do
-    sha256 "f03c11a3035f4a82f7974d361ebfa6591e5529e108f8acca1d97bbac85a71ee6"
-    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/HEAD/sonaric-entrypoint.sh"
+    sha256 "_BREW_ENTRYPOINT_SHA256"
+    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/_BREW_TAG/sonaric-entrypoint.sh"
   end
 
   def install
