@@ -1,7 +1,7 @@
 class SonaricRuntime < Formula
   desc "Sonaric Network Runtime: the runtime for the Sonaric Network daemon."
   homepage "https://sonaric.xyz"
-  version "0.0.1"
+  version "1.3.1"
 
   depends_on "podman"
 
