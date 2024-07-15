@@ -1,12 +1,12 @@
 class Sonaric < Formula
   desc "Sonaric Network: the AI-powered backbone for all blockchains."
   homepage "https://sonaric.xyz"
-  version "1.4.0"
+  version "1.5.0"
 
-  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v1.4.0.tar.gz"
-  sha256_x64 = "d815141e19839186f62460da538307ac71deb7c6eb079d8a7be9246caea7746f"
-  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v1.4.0.tar.gz"
-  sha256_arm64 = "048de86998c6360c21c6d1c62c712c2df2673d797bdcf1a5169c35022f17ccf5"
+  url_x64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-darwin-v1.5.0.tar.gz"
+  sha256_x64 = "05fc92bbb325de412a8c58dbe2659e7032280b00186a4ba4ba775aa4bba75d03"
+  url_arm64 = "https://storage.googleapis.com/sonaric-releases/stable/macos/sonaric-arm-darwin-v1.5.0.tar.gz"
+  sha256_arm64 = "798ec58159d2f7b34fdef8495889ec3383599bc4765a58ac5c01eb32dbf4917c"
 
   depends_on "monk-io/sonaric/sonaric-runtime"
 
@@ -20,7 +20,7 @@ class Sonaric < Formula
 
   resource "sonaric-entrypoint" do
     sha256 "f03c11a3035f4a82f7974d361ebfa6591e5529e108f8acca1d97bbac85a71ee6"
-    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/v1.4.0/sonaric-entrypoint.sh"
+    url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/v1.5.0/sonaric-entrypoint.sh"
   end
 
   def install
