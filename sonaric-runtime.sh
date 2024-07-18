@@ -5,19 +5,45 @@
 # shellcheck disable=SC2312
 set -u
 
+APP="xyz.sonaric.desktop"
 NAME="Sonaric-runtime"
+
+if [[ "${HOME}" == "" ]]; then
+  HOME="~"
+fi
+
+LOG_DIR="${HOME}/Library/Logs/${APP}"
+LOG_FILE="${LOG_DIR}/runtime.log"
 
 log() {
   echo "$@"
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] $@" >> ${LOG_FILE}
+  fi
 }
 
 warn() {
   echo "WARNING: $@"
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] WARNING: $@" >> ${LOG_FILE}
+  fi
 }
 
 abort() {
   echo "ERROR: $@" >&2
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] ERROR: $@" >> ${LOG_FILE}
+  fi
   exit 1
+}
+
+execute() {
+  log "${NAME} execute: $@"
+  if ! $@ 2>&1 >> ${LOG_FILE}; then
+    warn "Failed during: ${@}"
+    return 1
+  fi
+  return 0
 }
 
 add_to_path(){
@@ -51,18 +77,22 @@ check_command(){
   done
 }
 
+add_to_path "/sbin" "/usr/sbin" "/usr/local/sbin"
+add_to_path "/bin" "/usr/bin" "/usr/local/bin"
+add_to_path "/opt/homebrew/bin"
+
+check_command ps tr tee arch expr date uname mkdir touch sysctl podman
+
+mkdir -p ${LOG_DIR}
+touch ${LOG_FILE}
+log "${NAME} starting ..."
+
 # Fail fast with a concise message when not using bash
 # Single brackets are needed here for POSIX compatibility
 # shellcheck disable=SC2292
 if [ -z "${BASH_VERSION:-}" ]; then
   abort "Bash is required to interpret this script."
 fi
-
-add_to_path "/sbin" "/usr/sbin" "/usr/local/sbin"
-add_to_path "/bin" "/usr/bin" "/usr/local/bin"
-add_to_path "/opt/homebrew/bin"
-
-check_command ps tr arch expr uname sysctl podman
 
 OS="$(uname 2>/dev/null)"
 # Check if we are on mac
@@ -126,15 +156,15 @@ while [[ "$RUNNING" != "true" ]]; do
     stopped)
       if [[ "${PODMAN_MACHINE_CPUS}" != "" ]]; then
         log "Podman machine set ${PODMAN_MACHINE_CPUS}"
-        podman machine set ${PODMAN_MACHINE_CPUS}
+        execute podman machine set ${PODMAN_MACHINE_CPUS}
       fi
       if [[ "${PODMAN_MACHINE_MEMORY}" != "" ]]; then
         log "Podman machine set ${PODMAN_MACHINE_MEMORY}"
-        podman machine set ${PODMAN_MACHINE_MEMORY}
+        execute podman machine set ${PODMAN_MACHINE_MEMORY}
       fi
       # Start default podman machine
       log "Podman machine starting..."
-      podman machine start || podman machine stop
+      execute podman machine start || execute podman machine stop
       ;;
     running)
       # Machine is already running
@@ -143,7 +173,7 @@ while [[ "$RUNNING" != "true" ]]; do
     *)
       # Initialize default podman machine
       log "Podman machine initializing..."
-      podman machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} ${PODMAN_MACHINE_IMAGE} || abort "Podman machine initializing failed"
+      execute podman machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} ${PODMAN_MACHINE_IMAGE} || abort "Podman machine initializing failed"
       ;;
   esac
 
@@ -166,17 +196,17 @@ KillMode=process
 WantedBy=multi-user.target
 " | podman machine ssh tee /etc/systemd/system/systime-sync.service || warn "Create systime-sync.service"
 
-podman machine ssh chmod 664 /etc/systemd/system/systime-sync.service || warn "Update permissions for systime-sync.service"
+execute podman machine ssh chmod 664 /etc/systemd/system/systime-sync.service || warn "Update permissions for systime-sync.service"
 
 # If the service was disabled for some reason we should enable it on each restart
-podman machine ssh systemctl enable --now systime-sync || warn "Enable systime-sync.service"
+execute podman machine ssh systemctl enable --now systime-sync || warn "Enable systime-sync.service"
 sleep 3
-podman machine ssh systemctl status systime-sync.service
+execute podman machine ssh systemctl status systime-sync.service
 
 # If service was changed we should restart it to apply changes
-podman machine ssh systemctl restart systime-sync.service || warn "Restart systime-sync.service"
+execute podman machine ssh systemctl restart systime-sync.service || warn "Restart systime-sync.service"
 sleep 3
-podman machine ssh systemctl status systime-sync.service
+execute podman machine ssh systemctl status systime-sync.service
 
 log "Host: $(date)"
 log "=VM=: $(podman machine ssh date)"
