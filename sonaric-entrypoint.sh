@@ -9,21 +9,47 @@ export HOMEBREW_NO_COLOR=1
 export HOMEBREW_NO_EMOJI=1
 export HOMEBREW_AUTO_UPDATE_SECS=1
 
+APP="xyz.sonaric.desktop"
 NAME="Sonaric entrypoint"
 SONARIC_SERVICE_NAME="sonaric"
 SONARIC_RUNTIME_SERVICE_NAME="sonaric-runtime"
 
+if [[ "${HOME}" == "" ]]; then
+  HOME="~"
+fi
+
+LOG_DIR="${HOME}/Library/Logs/${APP}"
+LOG_FILE="${LOG_DIR}/entrypoint.log"
+
 log() {
   echo "$@"
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] $@" >> ${LOG_FILE}
+  fi
 }
 
 warn() {
   echo "WARNING: $@"
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] WARNING: $@" >> ${LOG_FILE}
+  fi
 }
 
 abort() {
   echo "ERROR: $@" >&2
+  if [ -f ${LOG_FILE} ]; then
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] ERROR: $@" >> ${LOG_FILE}
+  fi
   exit 1
+}
+
+execute() {
+  log "${NAME} execute: $@"
+  if ! $@ 2>&1 >> ${LOG_FILE}; then
+    warn "Failed during: ${@}"
+    return 1
+  fi
+  return 0
 }
 
 add_to_path(){
@@ -57,18 +83,22 @@ check_command(){
   done
 }
 
+add_to_path "/sbin" "/usr/sbin" "/usr/local/sbin"
+add_to_path "/bin" "/usr/bin" "/usr/local/bin"
+add_to_path "/opt/homebrew/bin"
+
+check_command ps tr tee arch expr date brew uname mkdir touch sysctl podman sonaricd
+
+mkdir -p ${LOG_DIR}
+touch ${LOG_FILE}
+log "${NAME} starting ..."
+
 # Fail fast with a concise message when not using bash
 # Single brackets are needed here for POSIX compatibility
 # shellcheck disable=SC2292
 if [ -z "${BASH_VERSION:-}" ]; then
   abort "Bash is required to interpret this script."
 fi
-
-add_to_path "/sbin" "/usr/sbin" "/usr/local/sbin"
-add_to_path "/bin" "/usr/bin" "/usr/local/bin"
-add_to_path "/opt/homebrew/bin"
-
-check_command ps tr arch expr uname sysctl brew podman sonaricd
 
 OS="$(uname 2>/dev/null)"
 # Check if we are on mac
@@ -100,7 +130,7 @@ while [[ "${RUNNING}" != "true" ]]; do
   log "${NAME} detects podman machine state: '${PODMAN_MACHINE_STATE}'"
 
   log "${NAME} runtime service checking..."
-  brew services info -q ${SONARIC_RUNTIME_SERVICE_NAME}
+  execute brew services info -q ${SONARIC_RUNTIME_SERVICE_NAME}
 
   case "${PODMAN_MACHINE_STATE}" in
     running)
@@ -110,7 +140,7 @@ while [[ "${RUNNING}" != "true" ]]; do
     *)
       # Initialize sonaric-runtime
       log "Sonaric-runtime initializing..."
-      brew services start -q ${SONARIC_RUNTIME_SERVICE_NAME} || abort "Service ${SONARIC_RUNTIME_SERVICE_NAME} initialization failed"
+      execute brew services start -q ${SONARIC_RUNTIME_SERVICE_NAME} || abort "Service ${SONARIC_RUNTIME_SERVICE_NAME} initialization failed"
       ;;
   esac
 
@@ -169,7 +199,7 @@ daemon_shutdown(){
 
 # Start sonaric daemon
 log "Sonaric daemon starting..."
-sonaricd --truncate-log -m "unix://${CR_PATH}" &
+sonaricd --truncate-log -m "unix://${CR_PATH}" 2>&1 >> ${LOG_FILE} &
 SONARICD_PID=$!
 
 log "Sonaric daemon started (PID=${SONARICD_PID})"
@@ -188,4 +218,4 @@ log "Waiting for Sonaric daemon stopping..."
 sleep 15
 
 log "Service ${SONARIC_RUNTIME_SERVICE_NAME} checking..."
-brew services info -q ${SONARIC_RUNTIME_SERVICE_NAME}
+execute brew services info -q ${SONARIC_RUNTIME_SERVICE_NAME}
