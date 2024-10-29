@@ -163,8 +163,13 @@ while [[ "$RUNNING" != "true" ]]; do
         execute podman machine set ${PODMAN_MACHINE_MEMORY}
       fi
       # Start default podman machine
-      log "Podman machine starting..."
+      log "Podman machine start"
       execute podman machine start || execute podman machine stop
+      ;;
+    starting)
+      # Machine is starting, let's wait a little bit
+      log "Podman machine starting"
+      sleep 2
       ;;
     running)
       # Machine is already running
@@ -172,7 +177,7 @@ while [[ "$RUNNING" != "true" ]]; do
       ;;
     *)
       # Initialize default podman machine
-      log "Podman machine initializing..."
+      log "Podman machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} ${PODMAN_MACHINE_IMAGE}"
       execute podman machine init --now --rootful ${PODMAN_MACHINE_CPUS} ${PODMAN_MACHINE_MEMORY} ${PODMAN_MACHINE_IMAGE} || abort "Podman machine initializing failed"
       ;;
   esac
