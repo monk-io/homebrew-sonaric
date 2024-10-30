@@ -123,10 +123,10 @@ MEMSIZE_MB=$(expr $(sysctl -n hw.memsize 2>/dev/null) / 1024 / 1024 2>/dev/null)
 log "${NAME} detects resources: NCPU=${NCPU} and MEMSIZE=${MEMSIZE_MB}(MB)"
 
 VM_OS_BUILD=""
-if [[ "${OS_ARCH}" == "arm64" ]]; then
-  # ISSUE: https://github.com/containers/podman/issues/22708
-  VM_OS_BUILD="39.20240407.3.0"
-fi
+#if [[ "${OS_ARCH}" == "arm64" ]]; then
+#  # ISSUE: https://github.com/containers/podman/issues/22708
+#  VM_OS_BUILD="39.20240407.3.0"
+#fi
 
 PODMAN_MACHINE_CPUS=""
 PODMAN_MACHINE_MEMORY=""
