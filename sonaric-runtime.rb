@@ -1,12 +1,12 @@
 class SonaricRuntime < Formula
   desc "Sonaric Network Runtime: the runtime for the Sonaric Network daemon."
   homepage "https://sonaric.xyz"
-  version "1.8.0"
+  version "1.9.4"
 
   depends_on "podman"
 
-  sha256 "5810eab4ff9e6e091563e366e9dd606dc1eec36ea44cc3dac81ff0482e96d045"
-  url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/v1.8.0/sonaric-runtime.sh"
+  sha256 "b1a86fd70ec07f4a1fb22ac9df5d7fa85ceeebbd2e159748af0bc1df52598150"
+  url "https://raw.githubusercontent.com/monk-io/homebrew-sonaric/v1.9.4/sonaric-runtime.sh"
 
   def install
     bin.install "sonaric-runtime.sh" => "sonaric-runtime"
